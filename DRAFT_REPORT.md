@@ -4,7 +4,7 @@ Run: 2026-05-14.
 
 ## Verdict
 
-GO local strict pour un brouillon jetable, pas pour publication immédiate.
+GO promotion après passe de robustesse du 2026-05-14.
 
 `http-cache-control-kit` est une petite librairie TypeScript clean-room pour parser, diagnostiquer et reformater les headers HTTP `Cache-Control`.
 
@@ -94,21 +94,22 @@ Le coeur utilise seulement chaînes, tableaux, objets et expressions régulière
 
 Pas de CLI dans ce brouillon. Une CLI pourrait valider un header depuis le terminal, mais elle n'apporte pas assez de valeur pour la version locale initiale et ajouterait une surface Node inutile.
 
-## Ce qui manque avant publication
+## Passe promotion 2026-05-14
 
-- Refaire une recherche concurrentielle plus large avec téléchargements disponibles.
-- Comparer explicitement avec `cache-control-parser` et `cache-parser`.
-- Ajouter éventuellement des fixtures issues de cas RFC recodés à la main, sans copier de tests existants.
-- Décider si `unknown-directive` doit être un warning non bloquant dans `ok`.
-- Relire la compatibilité exacte de `max-stale` sans valeur, qui est autorisée dans certains contextes de requête.
+- Vérification concurrence: `cache-control-parser`, `cache-parser` et `parse-cache-control` existent déjà, mais la promesse locale reste différente grâce au couple parser + formatter + diagnostics stables.
+- Passe utilisateur avancé 1: correction de `max-stale` sans valeur, qui doit être accepté en contexte requête; validation de `delta-seconds` conservée quand une valeur est fournie.
+- Passe utilisateur avancé 2: ajout de `must-understand`, clarification README sur le périmètre exact et le non-support volontaire de la sémantique HTTP complète.
+- Passe robustesse: tests ajoutés pour guillemets échappés, virgules citées, guillemet fermant suivi de texte invalide, `max-stale` avec/sans valeur et modes de quote du formatter.
+- Décision `unknown-directive`: conservé comme diagnostic bloquant par défaut, avec `allowUnknown` pour les outils qui veulent accepter les extensions privées.
 
 ## Validations
 
 - `npm install`: OK après retry réseau.
 - `npm run typecheck`: OK.
-- `npm test`: OK, 10 tests.
+- `npm test`: OK, 14 tests après passe promotion.
 - `npm run build`: OK.
 - `npm pack --dry-run`: premier essai bloqué par permissions du cache npm global (`EPERM` dans `~/.npm/_cacache`), puis OK avec `npm_config_cache=.npm-cache npm pack --dry-run`.
+- `npm_config_cache=.npm-cache npm pack --dry-run`: OK après passe promotion, tarball 11.6 kB.
 
 ## État Git local
 

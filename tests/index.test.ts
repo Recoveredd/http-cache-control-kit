@@ -28,6 +28,14 @@ describe("parseCacheControl", () => {
     expect(result.values["no-store"]).toBe(true);
   });
 
+  it("unescapes quoted values without splitting escaped commas", () => {
+    const result = parseCacheControl('private="Authorization, \\"Session\\", Cookie", no-store');
+
+    expect(result.ok).toBe(true);
+    expect(result.values.private).toBe('Authorization, "Session", Cookie');
+    expect(result.directives).toHaveLength(2);
+  });
+
   it("reports empty and non-string input without throwing", () => {
     expect(parseCacheControl("").diagnostics.map((item) => item.code)).toEqual(["empty-input"]);
     expect(parseCacheControl(null).diagnostics.map((item) => item.code)).toEqual(["expected-string"]);
@@ -58,6 +66,26 @@ describe("parseCacheControl", () => {
     expect(getCacheControlDeltaSeconds(invalid, "s-maxage")).toBeUndefined();
   });
 
+  it("accepts valueless max-stale and validates max-stale when a value is present", () => {
+    const valueless = parseCacheControl("max-stale, min-fresh=30");
+    const valued = parseCacheControl("max-stale=120");
+    const invalid = parseCacheControl("max-stale=soon");
+
+    expect(valueless.ok).toBe(true);
+    expect(valueless.values["max-stale"]).toBe(true);
+    expect(getCacheControlDeltaSeconds(valueless, "max-stale")).toBeUndefined();
+    expect(valued.ok).toBe(true);
+    expect(getCacheControlDeltaSeconds(valued, "max-stale")).toBe(120);
+    expect(invalid.diagnostics.map((item) => item.code)).toEqual(["invalid-delta-seconds"]);
+  });
+
+  it("recognizes modern response directives", () => {
+    const result = parseCacheControl("must-understand, no-store");
+
+    expect(result.ok).toBe(true);
+    expect(result.values["must-understand"]).toBe(true);
+  });
+
   it("reports unknown directives unless explicitly allowed", () => {
     expect(parseCacheControl("x-preview=on").diagnostics.map((item) => item.code)).toEqual([
       "unknown-directive"
@@ -67,9 +95,12 @@ describe("parseCacheControl", () => {
 
   it("reports invalid quoted values", () => {
     const result = parseCacheControl('private="authorization');
+    const trailing = parseCacheControl('private="authorization" extra');
 
     expect(result.ok).toBe(false);
     expect(result.diagnostics.map((item) => item.code)).toEqual(["invalid-quoted-string"]);
+    expect(trailing.ok).toBe(false);
+    expect(trailing.diagnostics.map((item) => item.code)).toEqual(["invalid-quoted-string"]);
   });
 });
 
@@ -94,5 +125,14 @@ describe("formatCacheControl", () => {
         { sort: true }
       )
     ).toBe('max-age=60, private="Authorization, Cookie"');
+  });
+
+  it("supports explicit quote modes", () => {
+    expect(formatCacheControl({ private: "Authorization" }, { quoteValues: "always" })).toBe(
+      'private="Authorization"'
+    );
+    expect(formatCacheControl({ private: "Authorization, Cookie" }, { quoteValues: "never" })).toBe(
+      "private=Authorization, Cookie"
+    );
   });
 });

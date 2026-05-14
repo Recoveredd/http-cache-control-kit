@@ -7,6 +7,10 @@ Parse and format HTTP `Cache-Control` headers with structured diagnostics.
 
 `http-cache-control-kit` is a clean-room TypeScript utility for small browser, worker, CLI and server tooling. It has no runtime dependencies and does not use Node-only APIs.
 
+## Demo
+
+Try the browser demo: [packages.wasta-wocket.fr/http-cache-control-kit](https://packages.wasta-wocket.fr/http-cache-control-kit/).
+
 ## Install
 
 ```bash
@@ -40,7 +44,7 @@ const header = formatCacheControl({
 
 Use this package when you need to inspect a `Cache-Control` header and explain what is wrong with it. The parser returns directives plus stable diagnostic codes for duplicate directives, missing delta-seconds values, invalid quoted strings and unknown directives.
 
-It intentionally does not evaluate full HTTP cache semantics across `Expires`, `Age`, `ETag` or request method. For that broader job, use a full cache semantics library.
+It intentionally does not evaluate full HTTP cache semantics across `Expires`, `Age`, `ETag`, request method or request-vs-response context. For that broader job, use a full cache semantics library.
 
 ## API
 
@@ -53,6 +57,13 @@ const result = parseCacheControl('private="Authorization, Cookie", max-age=60');
 
 result.values.private; // "Authorization, Cookie"
 result.values["max-age"]; // "60"
+```
+
+The parser accepts both request and response directives. For example, `max-stale` is valid without a value in request headers, but if a value is provided it must be valid `delta-seconds`.
+
+```ts
+parseCacheControl("max-stale").values["max-stale"]; // true
+getCacheControlDeltaSeconds(parseCacheControl("max-stale=120"), "max-stale"); // 120
 ```
 
 ### `formatCacheControl(values, options?)`

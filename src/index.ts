@@ -54,6 +54,7 @@ const KNOWN_DIRECTIVES = new Set([
   "no-transform",
   "only-if-cached",
   "must-revalidate",
+  "must-understand",
   "proxy-revalidate",
   "public",
   "private",
@@ -64,7 +65,6 @@ const KNOWN_DIRECTIVES = new Set([
 
 const VALUE_REQUIRED = new Set([
   "max-age",
-  "max-stale",
   "min-fresh",
   "s-maxage",
   "stale-while-revalidate",
@@ -252,7 +252,10 @@ function parseValue(raw: string): { value: string; invalid: boolean } {
       escaped = true;
       continue;
     }
-    if (char === "\"") return { value, invalid: false };
+    if (char === "\"") {
+      const trailing = raw.slice(index + 1).trim();
+      return { value, invalid: trailing.length > 0 };
+    }
     value += char;
   }
 
