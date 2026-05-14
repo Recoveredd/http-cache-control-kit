@@ -11,6 +11,15 @@ Parse and format HTTP `Cache-Control` headers with structured diagnostics.
 
 Try the browser demo: [packages.wasta-wocket.fr/http-cache-control-kit](https://packages.wasta-wocket.fr/http-cache-control-kit/).
 
+## Package quality
+
+- TypeScript types are generated from the source.
+- ESM-only package with no runtime dependencies.
+- Marked as side-effect free for bundlers.
+- CI runs `npm ci`, `typecheck`, `build`, and `test`.
+- Tested on Node.js 20 and 22 with GitHub Actions.
+- Browser-friendly implementation with no Node-only APIs.
+
 ## Install
 
 ```bash
