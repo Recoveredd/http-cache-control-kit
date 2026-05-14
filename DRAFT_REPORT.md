@@ -112,4 +112,12 @@ Pas de CLI dans ce brouillon. Une CLI pourrait valider un header depuis le termi
 
 ## État Git local
 
-À compléter après initialisation locale. Le Git doit rester strictement local au dossier du brouillon.
+Git local initialisé dans le dossier du brouillon uniquement.
+
+- `git init`: OK.
+- `git branch -M main`: a affiché une erreur de permission sur `.git/HEAD.lock`, mais `git status` indique ensuite `main`.
+- `git config user.name` / `git config user.email`: OK.
+- `git add .`: OK.
+- `git commit -m "Create http-cache-control-kit draft"`: OK, commit initial `97c203d`.
+
+Aucun remote ajouté.
